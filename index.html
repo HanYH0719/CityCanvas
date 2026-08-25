@@ -1,1026 +1,212 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>작품 정보</title>
-  <style>
-    * {
-      box-sizing: border-box;
-    }
-
-    :root {
-      --blue: #1473ff;
-      --text: #08090d;
-      --muted: #666b78;
-      --line: #e5e7eb;
-      --soft: #f3f4f6;
-      --shadow: 0 14px 30px rgba(15, 23, 42, 0.12);
-    }
-
-    body {
-      margin: 0;
-      min-height: 100vh;
-      color: var(--text);
-      background: #eef0f4;
-      font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", "Segoe UI", sans-serif;
-    }
-
-    .phone {
-      width: min(100%, 430px);
-      min-height: 100vh;
-      margin: 0 auto;
-      background: #fff;
-      overflow: hidden;
-    }
-
-    .screen {
-      min-height: 100vh;
-      padding: 18px 21px 31px;
-    }
-
-    .top-nav {
-      display: grid;
-      grid-template-columns: 42px 1fr 42px;
-      align-items: center;
-      height: 42px;
-      margin-top: 0;
-    }
-
-    .icon-btn {
-      display: grid;
-      place-items: center;
-      width: 42px;
-      height: 42px;
-      color: #050505;
-      background: transparent;
-      border: 0;
-      padding: 0;
-    }
-
-    .icon {
-      width: 25px;
-      height: 25px;
-      stroke: currentColor;
-      stroke-width: 2.35;
-      fill: none;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-    }
-
-    .top-title {
-      font-size: 18px;
-      font-weight: 800;
-      text-align: center;
-    }
-
-    .icon-hidden {
-      display: none;
-    }
-
-    .view-stage {
-      position: relative;
-      overflow: hidden;
-      background: #fff;
-    }
-
-    .view-stage.is-switching {
-      min-height: var(--stage-height);
-    }
-
-    .view {
-      display: block;
-      min-height: 100%;
-      background: #fff;
-    }
-
-    .view.hidden {
-      display: none;
-    }
-
-    .view-stage.is-switching .view {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-    }
-
-    .view.is-entering {
-      z-index: 2;
-      animation: stackIn 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
-      box-shadow: -20px 0 35px rgba(15, 23, 42, 0.12);
-    }
-
-    .view.is-exiting {
-      z-index: 1;
-      animation: stackOut 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
-    }
-
-    @keyframes stackIn {
-      from {
-        opacity: 1;
-        transform: translateX(92%);
-      }
-
-      to {
-        opacity: 1;
-        transform: translateX(0);
-      }
-    }
-
-    @keyframes stackOut {
-      from {
-        opacity: 1;
-        transform: translateX(0);
-      }
-
-      to {
-        opacity: 1;
-        transform: translateX(-18%);
-      }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      .view,
-      .view.is-entering,
-      .view.is-exiting,
-      .message-action {
-        animation: none;
-      }
-    }
-
-    .hero {
-      display: grid;
-      grid-template-columns: 46% 1fr;
-      gap: 21px;
-      align-items: start;
-      margin-top: 11px;
-      padding: 0 3px;
-    }
-
-    .artwork {
-      width: 100%;
-      aspect-ratio: 0.585;
-      object-fit: cover;
-      border-radius: 8px;
-      box-shadow: var(--shadow);
-    }
-
-    .title {
-      margin: 13px 0 12px;
-      font-size: 24px;
-      line-height: 1.18;
-      font-weight: 800;
-      letter-spacing: 0;
-      white-space: nowrap;
-    }
-
-    .meta {
-      display: grid;
-      gap: 6px;
-      color: #596070;
-      font-size: 13px;
-      line-height: 1.25;
-      font-weight: 500;
-    }
-
-    .tags {
-      display: flex;
-      gap: 7px;
-      margin: 18px 0 13px;
-    }
-
-    .tag {
-      min-width: 42px;
-      padding: 7px 12px;
-      color: #6a707c;
-      background: var(--soft);
-      border-radius: 999px;
-      font-size: 12px;
-      line-height: 1;
-      text-align: center;
-    }
-
-    .description {
-      margin: 0;
-      padding-top: 13px;
-      border-top: 1px solid var(--line);
-      color: #565d6c;
-      font-size: 12.5px;
-      line-height: 1.65;
-      font-weight: 500;
-      word-break: keep-all;
-    }
-
-    .tabs {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      margin-top: 43px;
-      border-bottom: 1px solid var(--line);
-    }
-
-    .tab {
-      position: relative;
-      height: 39px;
-      color: #727783;
-      background: transparent;
-      border: 0;
-      font-size: 13px;
-      font-weight: 600;
-      text-align: center;
-      font-family: inherit;
-      cursor: pointer;
-    }
-
-    .tab.active {
-      color: var(--blue);
-      font-weight: 800;
-    }
-
-    .tab.active::after {
-      content: "";
-      position: absolute;
-      left: 6px;
-      right: 6px;
-      bottom: -1px;
-      height: 3px;
-      border-radius: 3px 3px 0 0;
-      background: var(--blue);
-    }
-
-    .info-card {
-      margin-top: 0;
-      padding: 8px 14px 6px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-    }
-
-    .info-row {
-      display: grid;
-      grid-template-columns: 34% 1fr;
-      align-items: center;
-      min-height: 36px;
-      padding: 8px 0;
-      border-bottom: 1px solid var(--line);
-      font-size: 13px;
-    }
-
-    .info-row:last-child {
-      border-bottom: 0;
-    }
-
-    .label {
-      color: #686e7b;
-      font-weight: 500;
-    }
-
-    .value {
-      color: #141821;
-      font-weight: 600;
-    }
-
-    .actions {
-      display: grid;
-      gap: 11px;
-      margin-top: 12px;
-    }
-
-    .primary-action,
-    .secondary-action {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      width: 100%;
-      height: 46px;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 800;
-      font-family: inherit;
-    }
-
-    .primary-action {
-      color: #fff;
-      background: var(--blue);
-      border: 1px solid var(--blue);
-      cursor: pointer;
-    }
-
-    .secondary-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-    }
-
-    .secondary-action {
-      color: var(--blue);
-      background: #fff;
-      border: 1px solid #dfe2e7;
-      cursor: pointer;
-    }
-
-    .action-icon {
-      width: 19px;
-      height: 19px;
-      stroke: currentColor;
-      stroke-width: 2.2;
-      fill: none;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-    }
-
-    .review-panel {
-      display: none;
-      padding: 16px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: #fff;
-    }
-
-    .review-panel.open {
-      display: grid;
-      gap: 13px;
-    }
-
-    .rating {
-      display: flex;
-      justify-content: center;
-      gap: 8px;
-    }
-
-    .star-btn {
-      width: 34px;
-      height: 34px;
-      padding: 0;
-      color: #c7ccd4;
-      background: transparent;
-      border: 0;
-      font-size: 31px;
-      line-height: 1;
-      font-family: inherit;
-      cursor: pointer;
-    }
-
-    .star-btn.active {
-      color: var(--blue);
-    }
-
-    .review-input {
-      width: 100%;
-      min-height: 104px;
-      resize: vertical;
-      padding: 13px;
-      color: var(--text);
-      border: 1px solid #dfe2e7;
-      border-radius: 8px;
-      font-size: 14px;
-      line-height: 1.5;
-      font-family: inherit;
-      outline: none;
-    }
-
-    .review-input:focus {
-      border-color: var(--blue);
-      box-shadow: 0 0 0 3px rgba(20, 115, 255, 0.12);
-    }
-
-    .review-actions {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-    }
-
-    .review-submit,
-    .review-cancel {
-      height: 42px;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 800;
-      font-family: inherit;
-      cursor: pointer;
-    }
-
-    .review-submit {
-      color: #fff;
-      background: var(--blue);
-      border: 1px solid var(--blue);
-    }
-
-    .review-cancel {
-      color: #6b7280;
-      background: #fff;
-      border: 1px solid #dfe2e7;
-    }
-
-    .artist-profile {
-      display: grid;
-      gap: 13px;
-      padding-top: 24px;
-      padding-bottom: 74px;
-    }
-
-    .artist-head {
-      display: grid;
-      justify-items: center;
-      text-align: center;
-    }
-
-    .profile-photo {
-      width: 160px;
-      aspect-ratio: 1;
-      object-fit: cover;
-      object-position: center top;
-      border: 1px solid var(--line);
-      border-radius: 50%;
-      box-shadow: 0 16px 30px rgba(15, 23, 42, 0.14);
-    }
-
-    .artist-name {
-      margin: 14px 0 2px;
-      font-size: 34px;
-      line-height: 1.05;
-      font-weight: 900;
-    }
-
-    .artist-en {
-      color: #181b22;
-      font-size: 17px;
-      font-weight: 500;
-    }
-
-    .artist-role {
-      margin-top: 10px;
-      color: #6b7280;
-      font-size: 14px;
-      font-weight: 600;
-    }
-
-    .artist-meta {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 14px;
-      margin-top: 15px;
-      color: #646b78;
-      font-size: 13px;
-      font-weight: 500;
-    }
-
-    .artist-link {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      color: var(--blue);
-      text-decoration: none;
-    }
-
-    .meta-divider {
-      width: 1px;
-      height: 18px;
-      background: #d6d9df;
-    }
-
-    .contact-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 7px;
-      margin-top: 9px;
-    }
-
-    .contact-card,
-    .artist-card,
-    .stats-card {
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: #fff;
-      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.07);
-    }
-
-    .contact-card {
-      display: grid;
-      justify-items: center;
-      gap: 9px;
-      min-height: 69px;
-      padding: 13px 5px 11px;
-      color: #181b22;
-      font-size: 13px;
-      font-weight: 600;
-      font-family: inherit;
-      cursor: pointer;
-    }
-
-    .brand-instagram {
-      stroke: url(#instagramGradient);
-    }
-
-    .artist-card {
-      padding: 19px 19px;
-    }
-
-    .artist-info {
-      display: grid;
-      gap: 19px;
-      font-size: 14px;
-    }
-
-    .artist-info-row {
-      display: grid;
-      grid-template-columns: 33% 1fr;
-      gap: 10px;
-      align-items: start;
-    }
-
-    .artist-info-label {
-      color: #646b78;
-      font-weight: 600;
-    }
-
-    .artist-info-value {
-      color: #101319;
-      font-weight: 700;
-    }
-
-    .artist-card-title {
-      margin: 0 0 15px;
-      font-size: 18px;
-      font-weight: 900;
-    }
-
-    .artist-intro {
-      margin: 0;
-      color: #596070;
-      font-size: 14px;
-      line-height: 1.7;
-      font-weight: 500;
-      word-break: keep-all;
-    }
-
-    .more-link {
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      gap: 5px;
-      margin-top: 13px;
-      color: var(--blue);
-      font-size: 14px;
-      font-weight: 800;
-    }
-
-    .stats-card {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      padding: 13px 0;
-      text-align: center;
-    }
-
-    .stat {
-      border-right: 1px solid var(--line);
-    }
-
-    .stat:last-child {
-      border-right: 0;
-    }
-
-    .stat strong {
-      display: block;
-      color: var(--blue);
-      font-size: 24px;
-      line-height: 1;
-      font-weight: 900;
-    }
-
-    .stat span {
-      display: block;
-      margin-top: 7px;
-      color: #596070;
-      font-size: 12px;
-      font-weight: 600;
-    }
-
-    .message-action {
-      display: none;
-      position: fixed;
-      left: 50%;
-      bottom: 16px;
-      z-index: 20;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      width: min(calc(100% - 42px), 388px);
-      height: 45px;
-      color: #fff;
-      background: var(--blue);
-      border: 1px solid var(--blue);
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 800;
-      font-family: inherit;
-      cursor: pointer;
-      transform: translateX(-50%);
-      box-shadow: 0 12px 28px rgba(20, 115, 255, 0.25);
-    }
-
-    .message-action.visible {
-      display: flex;
-    }
-
-    @media (max-width: 390px) {
-      .screen {
-        padding-inline: 17px;
-      }
-
-      .hero {
-        gap: 17px;
-      }
-
-      .title {
-        font-size: 22px;
-      }
-
-      .description {
-        font-size: 12px;
-      }
-
-      .artist-name {
-        font-size: 31px;
-      }
-
-      .profile-photo {
-        width: 148px;
-      }
-    }
-  </style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="시흥능곡고등학교 시간표와 급식을 확인하는 모바일 웹앱">
+  <title>능곡생활 | 시흥능곡고등학교</title>
+  <link rel="icon" href="school-logo.png">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <main class="phone">
-    <section class="screen" aria-label="작품 정보 화면">
-      <nav class="top-nav" aria-label="상단 메뉴">
-        <button class="icon-btn" type="button" aria-label="뒤로 가기" id="backButton">
-          <svg class="icon" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"></path></svg>
+  <div class="app-shell">
+    <header class="app-header">
+      <a class="school-brand" href="https://shng-h.goesh.kr/" target="_blank" rel="noreferrer" aria-label="시흥능곡고등학교 공식 홈페이지">
+        <img src="school-logo.png" alt="시흥능곡고등학교">
+      </a>
+      <div class="header-actions">
+        <span class="live-badge" id="liveBadge"><span></span><b>NEIS</b></span>
+        <button class="icon-button" id="settingsButton" type="button" aria-label="API 설정">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"></path>
+            <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.86 2.86-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 0-.4 1.1V21H9.55v-.1A1.7 1.7 0 0 0 8.5 19.4a1.7 1.7 0 0 0-1.88.34l-.06.06-2.86-2.86.06-.06A1.7 1.7 0 0 0 4.1 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 0-1.1-.4H2.3V9.55h.1A1.7 1.7 0 0 0 4.1 8.5a1.7 1.7 0 0 0-.34-1.88l-.06-.06L6.56 3.7l.06.06A1.7 1.7 0 0 0 8.5 4.1a1.7 1.7 0 0 0 1-.6 1.7 1.7 0 0 0 .4-1.1V2.3h4.05v.1A1.7 1.7 0 0 0 15 4.1a1.7 1.7 0 0 0 1.88-.34l.06-.06 2.86 2.86-.06.06A1.7 1.7 0 0 0 19.4 8.5a1.7 1.7 0 0 0 .6 1 1.7 1.7 0 0 0 1.1.4h.1v4.05h-.1A1.7 1.7 0 0 0 19.4 15Z"></path>
+          </svg>
         </button>
-        <h1 class="top-title" id="pageTitle">작품 정보</h1>
-        <button class="icon-btn" type="button" aria-label="공유" id="topAction">
-          <svg class="icon share-icon" viewBox="0 0 24 24">
-            <path d="M12 16V3"></path>
-            <path d="m7 8 5-5 5 5"></path>
-            <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"></path>
+        <button class="icon-button" id="refreshButton" type="button" aria-label="새로고침">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M20 6v5h-5"></path>
+            <path d="M18.2 15a7 7 0 1 1-.8-7.9L20 10"></path>
           </svg>
-          <svg class="icon more-icon icon-hidden" viewBox="0 0 24 24">
-            <circle cx="5" cy="12" r="1.5" fill="currentColor"></circle>
-            <circle cx="12" cy="12" r="1.5" fill="currentColor"></circle>
-            <circle cx="19" cy="12" r="1.5" fill="currentColor"></circle>
+        </button>
+      </div>
+    </header>
+
+    <main class="app-main">
+      <section class="control-panel" aria-labelledby="pageHeading">
+        <div class="heading-row">
+          <div>
+            <p class="eyebrow">오늘의 학교생활</p>
+            <h1 id="pageHeading"><span id="classHeading">1학년 5반</span> 일정</h1>
+          </div>
+          <div class="term-chip" id="termChip">2학기</div>
+        </div>
+
+        <div class="selector-grid">
+          <label class="select-control">
+            <span>학년</span>
+            <select id="gradeSelect" aria-label="학년 선택">
+              <option value="1">1학년</option>
+              <option value="2">2학년</option>
+              <option value="3">3학년</option>
+            </select>
+          </label>
+          <label class="select-control">
+            <span>반</span>
+            <select id="classSelect" aria-label="반 선택"></select>
+          </label>
+        </div>
+
+        <div class="date-control">
+          <button class="date-arrow" id="previousDay" type="button" aria-label="이전 날짜">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg>
+          </button>
+          <button class="date-display" id="dateButton" type="button" aria-label="날짜 선택">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="3" y="5" width="18" height="16" rx="2"></rect>
+              <path d="M16 3v4M8 3v4M3 10h18"></path>
+            </svg>
+            <span id="selectedDateLabel"></span>
+            <span class="today-mark" id="todayMark">오늘</span>
+          </button>
+          <input class="date-input" id="dateInput" type="date" aria-label="조회 날짜">
+          <button class="date-arrow" id="nextDay" type="button" aria-label="다음 날짜">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg>
+          </button>
+        </div>
+
+        <div class="week-strip" id="weekStrip" aria-label="주간 날짜 선택"></div>
+      </section>
+
+      <nav class="section-tabs" aria-label="페이지 바로가기">
+        <button class="section-tab active" type="button" data-target="timetableSection">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="3" y="4" width="18" height="17" rx="2"></rect>
+            <path d="M8 2v4M16 2v4M3 9h18M8 13h.01M12 13h.01M16 13h.01M8 17h.01M12 17h.01"></path>
           </svg>
+          시간표
+        </button>
+        <button class="section-tab" type="button" data-target="mealSection">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M7 2v8M4 2v5a3 3 0 0 0 6 0V2M7 10v12M17 2c2 3 2 7 0 10v10M14 12h3"></path>
+          </svg>
+          급식
         </button>
       </nav>
 
-      <div class="view-stage" id="viewStage">
-      <div class="view" id="artworkView">
-        <section class="hero">
-          <img class="artwork" src="그림.PNG" alt="도시의 숨결 #22 작품 이미지">
-
-          <div class="summary">
-            <h2 class="title">도시의 숨결 #22</h2>
-            <div class="meta">
-              <span>2023</span>
-              <span>캔버스에 아크릴</span>
-              <span>116.8 x 91.0 cm</span>
+      <section class="content-section" id="timetableSection" aria-labelledby="timetableTitle">
+        <div class="section-heading">
+          <div class="section-title-wrap">
+            <span class="section-icon timetable-icon">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="3" y="4" width="18" height="17" rx="2"></rect>
+                <path d="M8 2v4M16 2v4M3 9h18"></path>
+              </svg>
+            </span>
+            <div>
+              <p class="section-kicker" id="timetableDate"></p>
+              <h2 id="timetableTitle">시간표</h2>
             </div>
-            <div class="tags" aria-label="작품 태그">
-              <span class="tag">추상</span>
-              <span class="tag">도시</span>
-              <span class="tag">텍스처</span>
-            </div>
-            <p class="description">
-              조범찬 작가는 도시에서 발견되는 겹과 균열, 빛의 흔적을 추상적인 화면으로 옮겨냅니다.
-              빠르게 변하는 풍경 안에서도 사라지지 않는 감각을 포착하며, 거친 질감과 선명한 색의 대비를
-              통해 도시를 살아가는 개인의 기억과 리듬을 표현합니다.
-            </p>
           </div>
-        </section>
-
-        <div class="tabs" role="tablist" aria-label="작품 상세 메뉴">
-          <button class="tab active" type="button" role="tab" aria-selected="true" data-view="artwork">작품 정보</button>
-          <button class="tab" type="button" role="tab" aria-selected="false" data-view="artist">작가 정보</button>
+          <span class="count-chip" id="periodCount">-</span>
         </div>
 
-        <section class="info-card" aria-label="작품 세부 정보">
-          <div class="info-row">
-            <div class="label">작가</div>
-            <div class="value">조범찬</div>
-          </div>
-          <div class="info-row">
-            <div class="label">제작 연도</div>
-            <div class="value">2023</div>
-          </div>
-          <div class="info-row">
-            <div class="label">재료</div>
-            <div class="value">캔버스에 아크릴</div>
-          </div>
-          <div class="info-row">
-            <div class="label">크기</div>
-            <div class="value">116.8 x 91.0 cm</div>
-          </div>
-          <div class="info-row">
-            <div class="label">작품 방향</div>
-            <div class="value">가로</div>
-          </div>
-          <div class="info-row">
-            <div class="label">보관 상태</div>
-            <div class="value">양호</div>
-          </div>
-          <div class="info-row">
-            <div class="label">위치</div>
-            <div class="value">서울특별시 종로구</div>
-          </div>
-        </section>
-
-        <section class="actions" aria-label="작품 작업">
-          <button class="primary-action" type="button" id="reviewToggle" aria-expanded="false" aria-controls="reviewPanel">
-            <svg class="action-icon" viewBox="0 0 24 24">
-              <path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.2l-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3Z"></path>
+        <div class="skeleton-list" id="timetableSkeleton" aria-hidden="true">
+          <span></span><span></span><span></span><span></span><span></span>
+        </div>
+        <ol class="timetable-list" id="timetableList" aria-live="polite"></ol>
+        <div class="empty-state hidden" id="timetableEmpty">
+          <span class="empty-icon">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M8 2v4M16 2v4"></path><rect x="3" y="4" width="18" height="17" rx="2"></rect><path d="M3 9h18M9 15h6"></path>
             </svg>
-            작품 평가 남기기
-          </button>
+          </span>
+          <strong>등록된 시간표가 없어요</strong>
+          <p>주말, 방학 또는 학교 일정일 수 있습니다.</p>
+        </div>
+        <div class="error-state hidden" id="timetableError">
+          <strong>시간표를 불러오지 못했어요</strong>
+          <p>네트워크 상태를 확인하고 다시 시도해주세요.</p>
+          <button type="button" data-retry>다시 불러오기</button>
+        </div>
+        <div class="partial-notice hidden" id="partialNotice">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v5M12 16h.01"></path></svg>
+          <p><strong>5교시까지만 표시 중이에요.</strong><br>전체 교시는 NEIS 인증키를 설정하면 확인할 수 있습니다.</p>
+          <button type="button" id="openKeySettings">설정</button>
+        </div>
+      </section>
 
-          <div class="review-panel" id="reviewPanel">
-            <div class="rating" role="radiogroup" aria-label="별점 선택">
-              <button class="star-btn" type="button" role="radio" aria-checked="false" aria-label="1점" data-rating="1">★</button>
-              <button class="star-btn" type="button" role="radio" aria-checked="false" aria-label="2점" data-rating="2">★</button>
-              <button class="star-btn" type="button" role="radio" aria-checked="false" aria-label="3점" data-rating="3">★</button>
-              <button class="star-btn" type="button" role="radio" aria-checked="false" aria-label="4점" data-rating="4">★</button>
-              <button class="star-btn" type="button" role="radio" aria-checked="false" aria-label="5점" data-rating="5">★</button>
-            </div>
-            <textarea class="review-input" placeholder="작품을 보며 느낀 점을 남겨보세요." aria-label="작품 평가 입력"></textarea>
-            <div class="review-actions">
-              <button class="review-cancel" type="button" id="reviewCancel">취소</button>
-              <button class="review-submit" type="button" id="reviewSubmit">평가 제출</button>
+      <section class="content-section meal-section" id="mealSection" aria-labelledby="mealTitle">
+        <div class="section-heading">
+          <div class="section-title-wrap">
+            <span class="section-icon meal-icon">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M7 2v8M4 2v5a3 3 0 0 0 6 0V2M7 10v12M17 2c2 3 2 7 0 10v10M14 12h3"></path>
+              </svg>
+            </span>
+            <div>
+              <p class="section-kicker" id="mealDate"></p>
+              <h2 id="mealTitle">급식</h2>
             </div>
           </div>
+          <span class="calorie-chip" id="calorieChip">-</span>
+        </div>
 
-          <div class="secondary-grid">
-            <button class="secondary-action" type="button">
-              <svg class="action-icon" viewBox="0 0 24 24">
-                <circle cx="18" cy="5" r="3"></circle>
-                <circle cx="6" cy="12" r="3"></circle>
-                <circle cx="18" cy="19" r="3"></circle>
-                <path d="m8.6 10.5 6.8-4"></path>
-                <path d="m8.6 13.5 6.8 4"></path>
-              </svg>
-              공유하기
-            </button>
-            <button class="secondary-action" type="button">
-              <svg class="action-icon" viewBox="0 0 24 24">
-                <path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"></path>
-                <circle cx="12" cy="10" r="3"></circle>
-              </svg>
-              위치 보기
-            </button>
-          </div>
-        </section>
+        <div class="meal-skeleton" id="mealSkeleton" aria-hidden="true">
+          <span></span><span></span><span></span><span></span><span></span>
+        </div>
+        <div class="meal-content hidden" id="mealContent"></div>
+        <div class="empty-state hidden" id="mealEmpty">
+          <span class="empty-icon">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 2v8M4 2v5a3 3 0 0 0 6 0V2M7 10v12M17 2c2 3 2 7 0 10v10"></path></svg>
+          </span>
+          <strong>등록된 급식이 없어요</strong>
+          <p>급식이 없는 날이거나 아직 식단이 등록되지 않았습니다.</p>
+        </div>
+        <div class="error-state hidden" id="mealError">
+          <strong>급식을 불러오지 못했어요</strong>
+          <p>네트워크 상태를 확인하고 다시 시도해주세요.</p>
+          <button type="button" data-retry>다시 불러오기</button>
+        </div>
+      </section>
+
+      <p class="update-line" id="updateLine" aria-live="polite">데이터를 불러오는 중입니다.</p>
+
+      <footer class="app-footer">
+        <p>교육부 NEIS 공개 데이터 기반</p>
+        <div>
+          <a href="https://open.neis.go.kr/" target="_blank" rel="noreferrer">NEIS 개방포털</a>
+          <a href="https://shng-h.goesh.kr/" target="_blank" rel="noreferrer">학교 홈페이지</a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <dialog class="settings-dialog" id="settingsDialog">
+    <form method="dialog" id="settingsForm">
+      <div class="dialog-header">
+        <div>
+          <p class="eyebrow">데이터 설정</p>
+          <h2>NEIS 인증키</h2>
+        </div>
+        <button class="icon-button" value="cancel" aria-label="설정 닫기">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"></path></svg>
+        </button>
       </div>
-
-      <div class="view hidden" id="artistView">
-        <section class="artist-profile" aria-label="작가 정보">
-          <div class="artist-head">
-            <img class="profile-photo" src="조범찬프로필.JPG" alt="조범찬 작가 프로필 사진">
-            <h2 class="artist-name">조범찬</h2>
-            <div class="artist-en">Jo Bum-chan</div>
-            <div class="artist-role">시각 예술가</div>
-            <div class="artist-meta">
-              <span>
-                <svg class="action-icon" viewBox="0 0 24 24" style="width: 15px; height: 15px; vertical-align: -3px;">
-                  <path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"></path>
-                  <circle cx="12" cy="10" r="3"></circle>
-                </svg>
-                Seoul, Korea
-              </span>
-              <span class="meta-divider" aria-hidden="true"></span>
-              <a class="artist-link" href="#" aria-label="작가 웹사이트">
-                <svg class="action-icon" viewBox="0 0 24 24" style="width: 16px; height: 16px;">
-                  <path d="M10 13a5 5 0 0 0 7.1 0l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1"></path>
-                  <path d="M14 11a5 5 0 0 0-7.1 0l-2 2A5 5 0 0 0 12 20.1l1.1-1.1"></path>
-                </svg>
-                jobumchan.art
-              </a>
-            </div>
-          </div>
-
-          <div class="contact-grid" aria-label="작가 연락 링크">
-            <button class="contact-card" type="button">
-              <svg class="action-icon" viewBox="0 0 24 24">
-                <rect x="3" y="5" width="18" height="14" rx="2"></rect>
-                <path d="m3 7 9 6 9-6"></path>
-              </svg>
-              이메일
-            </button>
-            <button class="contact-card" type="button">
-              <svg width="0" height="0" aria-hidden="true">
-                <defs>
-                  <linearGradient id="instagramGradient" x1="0" x2="1" y1="1" y2="0">
-                    <stop offset="0" stop-color="#feda75"></stop>
-                    <stop offset="0.35" stop-color="#fa7e1e"></stop>
-                    <stop offset="0.65" stop-color="#d62976"></stop>
-                    <stop offset="1" stop-color="#4f5bd5"></stop>
-                  </linearGradient>
-                </defs>
-              </svg>
-              <svg class="action-icon brand-instagram" viewBox="0 0 24 24">
-                <rect x="3" y="3" width="18" height="18" rx="5"></rect>
-                <circle cx="12" cy="12" r="4"></circle>
-                <circle cx="17.5" cy="6.5" r="1"></circle>
-              </svg>
-              인스타그램
-            </button>
-            <button class="contact-card" type="button">
-              <svg class="action-icon" viewBox="0 0 24 24">
-                <path d="M10 13a5 5 0 0 0 7.1 0l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1"></path>
-                <path d="M14 11a5 5 0 0 0-7.1 0l-2 2A5 5 0 0 0 12 20.1l1.1-1.1"></path>
-              </svg>
-              웹사이트
-            </button>
-          </div>
-
-          <section class="artist-card" aria-label="작가 상세 정보">
-            <div class="artist-info">
-              <div class="artist-info-row">
-                <div class="artist-info-label">활동 분야</div>
-                <div class="artist-info-value">미디어, 예술</div>
-              </div>
-              <div class="artist-info-row">
-                <div class="artist-info-label">출생</div>
-                <div class="artist-info-value">2010년</div>
-              </div>
-              <div class="artist-info-row">
-                <div class="artist-info-label">학교</div>
-                <div class="artist-info-value">시흥능곡고등학교 재학중</div>
-              </div>
-              <div class="artist-info-row">
-                <div class="artist-info-label">활동 기간</div>
-                <div class="artist-info-value">2023 - 현재</div>
-              </div>
-            </div>
-          </section>
-
-          <section class="artist-card" aria-label="작가 소개">
-            <h3 class="artist-card-title">작가 소개</h3>
-            <p class="artist-intro">
-              조범찬 작가는 디지털 매체와 시각 예술을 결합하여 새로운 방식의 시도를 이어가고 있습니다.
-              기술과 감정의 연결을 탐구하며, 일상의 순간을 시각적으로 재해석하는 작업을 주로 합니다.
-            </p>
-            <div class="more-link">
-              더보기
-              <svg class="action-icon" viewBox="0 0 24 24" style="width: 15px; height: 15px;">
-                <path d="m6 9 6 6 6-6"></path>
-              </svg>
-            </div>
-          </section>
-
-          <section class="stats-card" aria-label="작가 통계">
-            <div class="stat"><strong>32</strong><span>작품</span></div>
-            <div class="stat"><strong>5</strong><span>전시</span></div>
-            <div class="stat"><strong>892</strong><span>팔로워</span></div>
-          </section>
-
-        </section>
+      <p class="dialog-copy">인증키를 입력하면 5교시 이후를 포함한 전체 시간표를 조회할 수 있습니다. 키는 이 기기에만 저장됩니다.</p>
+      <label class="key-field">
+        <span>인증키</span>
+        <input id="apiKeyInput" type="password" placeholder="NEIS Open API 인증키" autocomplete="off">
+      </label>
+      <a class="key-help" href="https://open.neis.go.kr/" target="_blank" rel="noreferrer">무료 인증키 발급 페이지 열기</a>
+      <div class="dialog-actions">
+        <button class="secondary-button" id="clearKeyButton" type="button">키 삭제</button>
+        <button class="primary-button" id="saveKeyButton" type="submit" value="default">저장</button>
       </div>
-      </div>
-    </section>
-    <button class="message-action" type="button" id="artistMessageButton">
-      <svg class="action-icon" viewBox="0 0 24 24">
-        <path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.8 8.8 0 0 1-3.5-.7L3 21l1.8-5.2A8.3 8.3 0 0 1 3 10.5 8.4 8.4 0 0 1 12 2a8.4 8.4 0 0 1 9 9.5Z"></path>
-        <path d="M8 11h.01"></path>
-        <path d="M12 11h.01"></path>
-        <path d="M16 11h.01"></path>
-      </svg>
-      작가에게 메시지 보내기
-    </button>
-  </main>
+    </form>
+  </dialog>
 
-  <script>
-    const reviewToggle = document.querySelector("#reviewToggle");
-    const reviewPanel = document.querySelector("#reviewPanel");
-    const reviewInput = document.querySelector(".review-input");
-    const reviewCancel = document.querySelector("#reviewCancel");
-    const reviewSubmit = document.querySelector("#reviewSubmit");
-    const stars = [...document.querySelectorAll(".star-btn")];
-    const viewStage = document.querySelector("#viewStage");
-    const artworkView = document.querySelector("#artworkView");
-    const artistView = document.querySelector("#artistView");
-    const pageTitle = document.querySelector("#pageTitle");
-    const shareIcon = document.querySelector(".share-icon");
-    const moreIcon = document.querySelector(".more-icon");
-    const topAction = document.querySelector("#topAction");
-    const backButton = document.querySelector("#backButton");
-    const artistMessageButton = document.querySelector("#artistMessageButton");
-    const tabs = [...document.querySelectorAll(".tab")];
-    let activeView = "artwork";
-    let isSwitchingView = false;
-
-    function updateTabs(viewName) {
-      tabs.forEach((tab) => {
-        const isActive = tab.dataset.view === viewName;
-        tab.classList.toggle("active", isActive);
-        tab.setAttribute("aria-selected", String(isActive));
-      });
-    }
-
-    function updateHeader(viewName) {
-      const isArtist = viewName === "artist";
-      pageTitle.textContent = isArtist ? "작가 정보" : "작품 정보";
-      topAction.setAttribute("aria-label", isArtist ? "더보기" : "공유");
-      shareIcon.classList.toggle("icon-hidden", isArtist);
-      moreIcon.classList.toggle("icon-hidden", !isArtist);
-      artistMessageButton.classList.toggle("visible", isArtist);
-    }
-
-    function getViewElement(viewName) {
-      return viewName === "artist" ? artistView : artworkView;
-    }
-
-    function switchView(viewName) {
-      if (activeView === viewName || isSwitchingView) {
-        return;
-      }
-
-      isSwitchingView = true;
-      closeReviewPanel();
-      updateTabs(viewName);
-      updateHeader(viewName);
-
-      const currentView = getViewElement(activeView);
-      const nextView = getViewElement(viewName);
-      viewStage.style.setProperty("--stage-height", `${currentView.offsetHeight}px`);
-      viewStage.classList.add("is-switching");
-      nextView.classList.remove("hidden");
-      nextView.classList.add("is-entering");
-      currentView.classList.add("is-exiting");
-
-      window.setTimeout(() => {
-        currentView.classList.add("hidden");
-        currentView.classList.remove("is-exiting");
-        nextView.classList.remove("is-entering");
-        viewStage.classList.remove("is-switching");
-        viewStage.style.removeProperty("--stage-height");
-        activeView = viewName;
-        isSwitchingView = false;
-
-        if (viewName === "artist") {
-          window.scrollTo({ top: 0, behavior: "smooth" });
-        }
-      }, 420);
-    }
-
-    function closeReviewPanel() {
-      reviewPanel.classList.remove("open");
-      reviewToggle.setAttribute("aria-expanded", "false");
-    }
-
-    function resetReview() {
-      reviewInput.value = "";
-      stars.forEach((item) => {
-        item.classList.remove("active");
-        item.setAttribute("aria-checked", "false");
-      });
-    }
-
-    reviewToggle.addEventListener("click", () => {
-      const isOpen = reviewPanel.classList.toggle("open");
-      reviewToggle.setAttribute("aria-expanded", String(isOpen));
-    });
-
-    stars.forEach((star) => {
-      star.addEventListener("click", () => {
-        const rating = Number(star.dataset.rating);
-
-        stars.forEach((item) => {
-          const isActive = Number(item.dataset.rating) <= rating;
-          item.classList.toggle("active", isActive);
-          item.setAttribute("aria-checked", String(isActive && item === star));
-        });
-      });
-    });
-
-    reviewCancel.addEventListener("click", () => {
-      resetReview();
-      closeReviewPanel();
-    });
-
-    reviewSubmit.addEventListener("click", () => {
-      alert("평가 제출 완료");
-      resetReview();
-      closeReviewPanel();
-    });
-
-    tabs.forEach((tab) => {
-      tab.addEventListener("click", () => {
-        switchView(tab.dataset.view);
-      });
-    });
-
-    backButton.addEventListener("click", () => {
-      if (activeView === "artist") {
-        switchView("artwork");
-      }
-    });
-  </script>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
 </body>
 </html>
