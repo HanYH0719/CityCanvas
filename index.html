@@ -3,11 +3,11 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#ffffff">
+  <meta name="theme-color" content="#f2f2f7">
   <meta name="description" content="시흥능곡고등학교 시간표와 급식을 확인하는 모바일 웹앱">
   <title>능곡생활 | 시흥능곡고등학교</title>
   <link rel="icon" href="school-logo.png">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=2">
 </head>
 <body>
   <div class="app-shell">
@@ -94,7 +94,8 @@
         </button>
       </nav>
 
-      <section class="content-section" id="timetableSection" aria-labelledby="timetableTitle">
+      <div class="dashboard-grid">
+        <section class="content-section" id="timetableSection" aria-labelledby="timetableTitle">
         <div class="section-heading">
           <div class="section-title-wrap">
             <span class="section-icon timetable-icon">
@@ -134,9 +135,9 @@
           <p><strong>5교시까지만 표시 중이에요.</strong><br>전체 교시는 NEIS 인증키를 설정하면 확인할 수 있습니다.</p>
           <button type="button" id="openKeySettings">설정</button>
         </div>
-      </section>
+        </section>
 
-      <section class="content-section meal-section" id="mealSection" aria-labelledby="mealTitle">
+        <section class="content-section meal-section" id="mealSection" aria-labelledby="mealTitle">
         <div class="section-heading">
           <div class="section-title-wrap">
             <span class="section-icon meal-icon">
@@ -168,7 +169,8 @@
           <p>네트워크 상태를 확인하고 다시 시도해주세요.</p>
           <button type="button" data-retry>다시 불러오기</button>
         </div>
-      </section>
+        </section>
+      </div>
 
       <p class="update-line" id="updateLine" aria-live="polite">데이터를 불러오는 중입니다.</p>
 
